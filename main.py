@@ -48,7 +48,7 @@ lyrics_list = combined_df["lyric"].fillna("").tolist()
 
 vectorizer = TfidfVectorizer(
     stop_words="english",
-    max_features=3000,
+    max_features=2000,
     max_df=0.8,
     min_df=5
 )
