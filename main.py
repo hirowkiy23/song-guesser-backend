@@ -20,6 +20,39 @@ app.add_middleware(
 def home():
     return {"message": "Song Guesser AI Backend Running!"}
 
+import os 
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+DATASET_FOLDER = "datasets"
+
+all_dfs = []
+
+for file in os.listdir(DATASET_FOLDER):
+    if file.endswith(".csv"):
+        file_path = os.path.join(DATASET_FOLDER, file)
+        print(f"Loading {file_path}")
+        df = pd.read_csv(file_path)
+        all_dfs.append(df)
+combined_df = pd.concat(all_dfs, ignore_indez=True)
+
+# Clean column names (important)
+combined_df.columns = combined_df.columns.str.strip()
+
+print("Columns found:", combined_df.columns)
+print(f"Total songs loaded: {len(combined_df)}")
+
+song_titles = combined_df["title"].tolist()
+lyrics_list = combined_df["lyric"].fillna("").tolist()
+
+vectorizer = TfidfVectorizer(
+    stop_words="english",
+    max_features=10000
+)
+
+tfidf_matrix = vectorizer.fit_transform(lyrics_list)
+
 @app.post("/predict", response_model=SongResponse)
 def predict_song(request: SongRequest):
     predicted_song, confidence = predict_song_from_lyrics(request.lyrics)
